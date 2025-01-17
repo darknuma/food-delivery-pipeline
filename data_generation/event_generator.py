@@ -9,7 +9,7 @@ from faker import Faker
 from data_schema import (
     OrderEvent, CourierEvent, MerchantEvent, Location,
     OrderItem, OrderStatus, DeliveryStatus, ServiceType,
-    PaymentStatus, PaymentMethod
+    PaymentStatus, PaymentMethod, OrderReview
 )
 
 fake = Faker() 
@@ -22,6 +22,8 @@ class DeliveryEventGenerator:
         self.merchants = {}
         self.active_couriers = set()
         self.active_orders = {}
+        self.customer_ids = {}
+        self.order_reviews = {}
         self._load_merchants()  
         self.menu_items = self._load_menu_items()
         self.customer_addresses = df["Address"].to_list()
@@ -85,13 +87,14 @@ class DeliveryEventGenerator:
         )
 
         order_id = str(uuid.uuid4())
+        customer_id = str(uuid.uuid4())
         
         order_event = OrderEvent(
             event_id=event_id,
             event_timestamp=datetime.now(),
             order_id=order_id,
             merchant_id=merchant_id,
-            customer_id=str(uuid.uuid4()),
+            customer_id=customer_id,
             service_type=random.choice(list(ServiceType)),
             order_status=random.choice(list(OrderStatus)),
             delivery_location=delivery_location,
@@ -102,8 +105,10 @@ class DeliveryEventGenerator:
             payment_status=random.choice(list(PaymentStatus)),
             estimated_delivery_time=datetime.now() + timedelta(minutes=45)
         )
+            
 
         self.active_orders[order_id] = order_event
+        self.customer_ids[order_id] = customer_id 
         return order_id, order_event.model_dump()
 
     def generate_courier_event(self, event_id:str) -> dict:
@@ -167,6 +172,35 @@ class DeliveryEventGenerator:
         )
         return merchant_event.model_dump()
             
+    def generate_review_event(self, event_id:str) -> dict:
+        """Generate a customer feedback""" 
+      
+        if not self.active_orders:
+            return None  # Or handle the no-orders case differently
+            
+        # Select a random active order
+        order_id = random.choice(list(self.active_orders.keys()))
+        order = self.active_orders[order_id]  
+       
+
+        feedback_event = OrderReview(
+            review_id=str(uuid.uuid4()),
+            event_id=event_id, 
+            order_id=order_id,
+            customer_id=order.customer_id,
+            courier_rating=random.randint(1,5),
+            merchant_rating=random.randint(1,5),
+            delivery_rating=random.randint(1,5),
+            feedback_timestamp=datetime.now(),
+            comments=fake.text(max_nb_chars=200)
+        )
+        
+
+        self.order_reviews[order_id] = feedback_event
+
+        return feedback_event.model_dump()
+
+
 
 if __name__ == "__main__":
     FILE_PATH = "restaurants_cleaned.csv"
@@ -177,7 +211,9 @@ if __name__ == "__main__":
     order_id, order_event = generator.generate_order_event(shared_event_id)
     courier_event = generator.generate_courier_event(shared_event_id)
     merchant_event = generator.generate_merchant_event(shared_event_id)
+    review_event = generator.generate_review_event(shared_event_id)
     
     print("Order Event:", json.dumps(order_event, indent=2, default=str))
     print("Courier Event:", json.dumps(courier_event, indent=2, default=str))
     print("Merchant Event:", json.dumps(merchant_event, indent=2, default=str))
+    print("Review Event:", json.dumps(review_event, indent=2,default=str))

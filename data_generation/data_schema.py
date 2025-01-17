@@ -1,6 +1,5 @@
 
 from pydantic import BaseModel, Field, ConfigDict
-from uuid import UUID
 from enum import Enum
 import random 
 from datetime import datetime 
@@ -47,12 +46,12 @@ class MerchantEvent(BaseModel):
     current_load: int
 
 
-class CustomerReview(BaseModel):
+class OrderReview(BaseModel):
     review_id: str
     order_id: str
     customer_id: str
     courier_rating: Optional[int] = Field(None, ge=1, le=5)
-    restaurant_rating: Optional[int] = Field(None, ge=1, le=5)
+    merchant_rating: Optional[int] = Field(None, ge=1, le=5)
     delivery_rating: Optional[int] = Field(None, ge=1, le=5)
     feedback_timestamp: datetime
     comments: Optional[str]
