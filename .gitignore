@@ -1,0 +1,7 @@
+__pycache__
+data_generation/main.py 
+init_setups
+venv 
+docker*
+Dockerfile*
+producers.py
