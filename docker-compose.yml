@@ -1,0 +1,26 @@
+services:
+  data_generation:
+    build:
+      context: .
+      dockerfile: data_generation/Dockerfile
+    depends_on:
+      - kafka
+
+  data_ingestion:
+    build:
+      context: .
+      dockerfile: data_ingestion/Dockerfile
+    depends_on:
+      - kafka
+
+  kafka:
+    build:
+      context: ./kafka
+      dockerfile: Dockerfile
+    ports:
+      - "9092:9092"
+
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "2181:2181"

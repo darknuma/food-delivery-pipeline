@@ -12,7 +12,7 @@ TOTAL_SIZE_GB = 1  # Total data size to generate (in GB)
 DEFAULT_RECORD_SIZE = 1024  # Approximate size per record in bytes
 TARGET_RECORD_COUNT = int((TOTAL_SIZE_GB * 1024 * 1024 * 1024) / DEFAULT_RECORD_SIZE)
 
-
+produce = KafkaProducer()
 # Producer setup for Kafka
 producer = KafkaProducer(
     bootstrap_servers=[KAFKA_BROKER],
