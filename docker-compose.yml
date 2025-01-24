@@ -1,17 +1,14 @@
 services:
-  data_generation:
+
+  producer:
     build:
-      context: .
-      dockerfile: data_generation/Dockerfile
+      context: ./data_ingestion
+      dockerfile: Dockerfile
     depends_on:
       - kafka
 
-  data_ingestion:
-    build:
-      context: .
-      dockerfile: data_ingestion/Dockerfile
-    depends_on:
-      - kafka
+
+  consumer:
 
   kafka:
     build:
@@ -19,8 +16,104 @@ services:
       dockerfile: Dockerfile
     ports:
       - "9092:9092"
+  
+  cassandra:
+    build: 
+    context: ./cassandra
+    dockerfile: Dockerfile
+    depends_on:
+      - kafka
+  
+  spark-8:
+    build:
+    context: ./processing_setups
+    dockerfile: Dockerfile
+
 
   zookeeper:
     image: wurstmeister/zookeeper:latest
     ports:
       - "2181:2181"
+
+
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'ruok' | nc localhost 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s 
+  
+  
+  kafdrop:     # UI for Kafka
+    image: obsidiandynamics/kafdrop:latest
+    environment:
+      KAFKA_BROKERCONNECT: kafka-broker-1:9092,kafka-broker-2:9093
+      SERVER_PORT: 9001
+      JVM_OPTS: -Xms32M -Xmx64M
+    ports:
+      - "9001:9001"
+    depends_on:
+      - kafka-broker-1
+      - kafka-broker-2
+  
+   # zookeeper:
+  #   image: bitnami/zookeeper:latest
+  #   environment:
+  #     - ALLOW_ANONYMOUS_LOGIN=yes
+  #   ports:
+  #     - "2181:2181"
+  #   volumes:
+  #     - zkData1:/data
+  #     - zkCatalog1:/catalog
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 2G
+  #       reservations:
+  #         memory: 1G
+  
+  # kafka-broker-1:
+  #   image: confluentinc/cp-kafka:latest
+  #   environment:
+  #     KAFKA_BROKER_ID: 1
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-1:9092,INTERNAL://kafka-broker-1:29092
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
+  #     KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:29092
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+  #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+  #   depends_on:
+  #     - zookeeper
+  #   ports:
+  #     - "9092:9092"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 30s
+
+  # kafka-broker-2:
+  #   image: confluentinc/cp-kafka:latest
+  #   environment:
+  #     KAFKA_BROKER_ID: 2
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-2:9093,INTERNAL://kafka-broker-2:29093
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
+  #     KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093,INTERNAL://0.0.0.0:29093
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+  #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+  #   depends_on:
+  #     - zookeeper
+  #   ports:
+  #     - "9093:9093"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9093 --list"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 30s

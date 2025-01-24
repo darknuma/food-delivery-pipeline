@@ -203,7 +203,7 @@ class DeliveryEventGenerator:
 
 
 if __name__ == "__main__":
-    FILE_PATH = "restaurants_cleaned.csv"
+    FILE_PATH = "data_ingestion/data_utils/restaurants_cleaned.csv"
     df = pd.read_csv(FILE_PATH) 
     generator = DeliveryEventGenerator(df)
     shared_event_id = str(uuid.uuid4())

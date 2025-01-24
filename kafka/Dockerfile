@@ -1,4 +1,4 @@
-FROM wurstmeister/kafka:latest
+FROM kafka-broker1 
 
 # Set environment variables for Kafka
 ENV KAFKA_ADVERTISED_LISTENERS=INSIDE://kafka:9092,OUTSIDE://localhost:9092
@@ -12,3 +12,4 @@ RUN chmod +x /usr/local/bin/create_topics.sh
 
 # Command to run Kafka and create topics
 CMD ["sh", "-c", "sh /usr/local/bin/create_topics.sh & /usr/local/bin/kafka-server-start.sh /opt/kafka/config/server.properties"]
+
