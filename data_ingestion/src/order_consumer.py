@@ -38,7 +38,7 @@ class KafkaS3Consumer:
 
     def _get_schema(self, topic: str) -> pa.Schema:
         """Return the schema for the given topic."""
-        if topic == 'food-delivery.orders.raw':
+        if topic == 'food-delivery-orders-raw':
             return pa.schema([
                 pa.field('event_id', pa.string()),
                 pa.field('event_timestamp', pa.timestamp('ms')),
@@ -65,7 +65,7 @@ class KafkaS3Consumer:
                 pa.field('payment_method', pa.string()),
                 pa.field('payment_status', pa.string()),
             ])
-        elif topic == 'food-delivery.merchants.raw':
+        elif topic == 'food-delivery-merchants-raw':
             return pa.schema([
                 pa.field('event_id', pa.string()),
                 pa.field('event_timestamp', pa.timestamp('ms')),
@@ -76,7 +76,7 @@ class KafkaS3Consumer:
                 pa.field('current_load', pa.int32()),
 
             ])
-        elif topic == 'food-delivery.reviews.raw':
+        elif topic == 'food-delivery-reviews-raw':
             return pa.schema([
                 pa.field('review_id', pa.string()),
                 pa.field('event_id', pa.string()),
@@ -146,13 +146,13 @@ class KafkaS3Consumer:
 
 
 if __name__ == "__main__":
-    bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+    bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka-broker-1:9092")
     group_id = os.getenv("KAFKA_GROUP_ID", "food-delivery-group")
     s3_bucket = os.getenv("S3_BUCKET", "numa-delivery")
     aws_region = os.getenv("AWS_REGION", "us-east-2")
     aws_access_key = os.getenv("AWS_ACCESS_KEY")
     aws_secret_key = os.getenv("AWS_SECRET_KEY")
-    topics = os.getenv("KAFKA_TOPICS", "food-delivery.orders.raw,food-delivery.merchants.raw,food-delivery.reviews.raw").split(",")
+    topics = os.getenv("KAFKA_TOPICS", "food-delivery-orders-raw,food-delivery-merchants-raw,food-delivery-reviews-raw").split(",")
 
     consumer = KafkaS3Consumer(
         bootstrap_servers=bootstrap_servers,

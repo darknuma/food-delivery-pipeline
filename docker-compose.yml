@@ -7,10 +7,12 @@ services:
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka-broker-1:9092
     depends_on:
-      - kafka-broker-1
-      - cassandra
+      kafka-broker-1:
+        condition: service_healthy  # Wait for Kafka healthcheck to pass
+      cassandra:
+        condition: service_healthy
     volumes:
-      - ./data_ingestion :/app
+      - ./data_ingestion:/app
 
   cassandra:
     build: 
@@ -20,6 +22,8 @@ services:
       - "9042:9042"
     environment:
       CASSANDRA_CLUSTER_NAME: "FoodDeliveryCluster"
+      CASSANDRA_USER: cassandra
+      CASSANDRA_PASSWORD: cassandra
     healthcheck:
       test: ["CMD-SHELL", "cqlsh -u cassandra -p cassandra -e 'DESCRIBE KEYSPACES'"]
       interval: 10s
@@ -27,7 +31,9 @@ services:
       retries: 30
     depends_on:
       - kafka-broker-1
-  
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+
   spark-8:
     build:
       context: ./processing
@@ -42,6 +48,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka-broker-1:9092
       CASSANDRA_HOSTS: cassandra
       CASSANDRA_KEYSPACE: food_delivery
+      PROTOCOL_VERSION: 5
     depends_on:
       cassandra:
         condition: service_healthy  # Wait for Cassandra to be ready
@@ -60,10 +67,11 @@ services:
     env_file:
       - .env 
     depends_on:
-      - kafka-broker-1
+      kafka-broker-1:
+        condition: service_healthy  # Wait for Kafka healthcheck to pass
   
   
-  kafdrop:     # UI for Kafka
+  kafdrop:
     image: obsidiandynamics/kafdrop:latest
     environment:
       KAFKA_BROKERCONNECT: kafka-broker-1:9092
@@ -93,31 +101,43 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-1:9092,INTERNAL://kafka-broker-1:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-1:9092,INTERNAL://kafka-broker-1:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:29092
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
     ports:
       - "9092:9092"
-    command: >
-      bash -c "
-      kafka-topics.sh --create --topic food-delivery.orders.raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 &&
-      kafka-topics.sh --create --topic food-delivery.couriers.raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 &&
-      kafka-topics.sh --create --topic food-delivery.merchants.raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 &&
-      kafka-topics.sh --create --topic food-delivery.reviews.raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 &&
-      tail -f /dev/null
-      "
     healthcheck:
       test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka-broker-1:9092 --list"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
+
+  kafka-setup:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      kafka-broker-1:
+        condition: service_healthy
+    command: |
+      bash -c '
+      echo "Waiting for Kafka to be ready..."
+      cub kafka-ready -b kafka-broker-1:9092 1 30 &&
+      echo "Creating topics..."
+      /usr/bin/kafka-topics --create --topic food-delivery-orders-raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 &&
+      /usr/bin/kafka-topics --create --topic food-delivery-couriers-raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 &&
+      /usr/bin/kafka-topics --create --topic food-delivery-merchants-raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 &&
+      /usr/bin/kafka-topics --create --topic food-delivery-reviews-raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 
+      '
+volumes:
+  cassandra_data:
+
+
 
   # kafka-broker-2:
   #   image: confluentinc/cp-kafka:latest

@@ -6,7 +6,12 @@ from decimal import Decimal
 from typing import Dict, List, Tuple
 import json
 from faker import Faker
-from data_schema import (
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from data_utils.data_schema import (
     OrderEvent, CourierEvent, MerchantEvent, Location,
     OrderItem, OrderStatus, DeliveryStatus, ServiceType,
     PaymentStatus, PaymentMethod, OrderReview

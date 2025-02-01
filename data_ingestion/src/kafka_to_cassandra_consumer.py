@@ -21,7 +21,7 @@ class KafkaToCassandraConsumer:
             max_poll_records=200,  
         )
 
-        self.cluster = Cluster(cassandra_hosts)
+        self.cluster = Cluster(cassandra_hosts, protocol_version=5)
         self.session = self.cluster.connect(keyspace)
 
     def start_consuming(self, topics: list):
@@ -48,7 +48,7 @@ class KafkaToCassandraConsumer:
         """Process a Kafka message and insert it into the appropriate Cassandra table."""
         data = record.value
         try:
-            if record.topic == 'food-delivery.orders.raw':
+            if record.topic == 'food-delivery-orders-raw':
                 items = json.dumps(data.get('items', [])) 
                 delivery_location = json.dumps(data['delivery_location']) 
                 delivery_fee = float(data['delivery_fee']) 
@@ -70,7 +70,7 @@ class KafkaToCassandraConsumer:
                 ))
                 logger.info(f"Inserted order {data['order_id']} into Cassandra")
 
-            elif record.topic == 'food-delivery.couriers.raw':
+            elif record.topic == 'food-delivery-couriers-raw':
                 delivery_location = json.dumps(data['delivery_location'])  
 
                 self.session.execute("""
@@ -91,11 +91,11 @@ class KafkaToCassandraConsumer:
 
 
 if __name__ == "__main__":
-    bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+    bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka-broker-1:9092")
     group_id = os.getenv("KAFKA_GROUP_ID", "food-delivery-group")
-    cassandra_hosts = os.getenv("CASSANDRA_HOSTS", "localhost").split(",")
+    cassandra_hosts = os.getenv("CASSANDRA_HOSTS", "cassandra").split(",")
     keyspace = os.getenv("CASSANDRA_KEYSPACE", "food_delivery")
-    topics = os.getenv("KAFKA_TOPICS", "food-delivery.orders.raw,food-delivery.couriers.raw").split(",")
+    topics = os.getenv("KAFKA_TOPICS", "food-delivery-orders-raw,food-delivery-couriers-raw").split(",")
 
     consumer = KafkaToCassandraConsumer(
         bootstrap_servers=bootstrap_servers,
