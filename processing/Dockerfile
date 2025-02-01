@@ -1,5 +1,9 @@
 FROM bitnami/spark:3.5.3
 
+# Install curl
+USER root
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # Set environment variables for Spark and Hadoop
 ENV SPARK_HOME=/opt/bitnami/spark
 ENV PATH=$SPARK_HOME/bin:$PATH

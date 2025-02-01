@@ -9,6 +9,6 @@ RUN pip install --no-cache-dir -r requirement.txt
 COPY . .
 
 # Set the entrypoint
-CMD ["python", "./src/delivery_producer.py.py"]
+CMD ["python", "./src/delivery_producer.py"]
 
 
