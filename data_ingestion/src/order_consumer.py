@@ -7,6 +7,10 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from io import BytesIO
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -144,8 +148,8 @@ class KafkaS3Consumer:
 if __name__ == "__main__":
     bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
     group_id = os.getenv("KAFKA_GROUP_ID", "food-delivery-group")
-    s3_bucket = os.getenv("S3_BUCKET", "your-s3-bucket")
-    aws_region = os.getenv("AWS_REGION", "us-east-1")
+    s3_bucket = os.getenv("S3_BUCKET", "numa-delivery")
+    aws_region = os.getenv("AWS_REGION", "us-east-2")
     aws_access_key = os.getenv("AWS_ACCESS_KEY")
     aws_secret_key = os.getenv("AWS_SECRET_KEY")
     topics = os.getenv("KAFKA_TOPICS", "food-delivery.orders.raw,food-delivery.merchants.raw,food-delivery.reviews.raw").split(",")

@@ -1,19 +1,14 @@
-FROM python:3.9-slim AS data_ingestion
+FROM python:3.11-slim
 
-# Set the working directory
-WORKDIR /app/data_ingestion
+WORKDIR /app
 
-# Copy the requirements file for data ingestion
-COPY data_ingestion/requirement.txt .
-
-# Install the dependencies for data ingestion
+COPY requirement.txt .
 RUN pip install --no-cache-dir -r requirement.txt
 
-# Copy the data ingestion source code
-COPY data_ingestion/ .
+# Copy the application code
+COPY . .
 
-# Copy the data generation code from the previous stage
-COPY --from=data_generation /app/data_generation /app/data_generation
+# Set the entrypoint
+CMD ["python", "./src/delivery_producer.py.py"]
 
-# Command to run the Kafka producer (adjust as necessary)
-CMD ["python", "data_ingestion/producers.py"]
+

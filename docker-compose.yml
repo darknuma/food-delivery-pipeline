@@ -4,96 +4,120 @@ services:
     build:
       context: ./data_ingestion
       dockerfile: Dockerfile
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka-broker-1:9092
     depends_on:
-      - kafka
+      - kafka-broker-1
+      - cassandra
+    volumes:
+      - ./data_ingestion :/app
 
-
-  consumer:
-
-  kafka:
-    build:
-      context: ./kafka
-      dockerfile: Dockerfile
-    ports:
-      - "9092:9092"
-  
   cassandra:
     build: 
-    context: ./cassandra
-    dockerfile: Dockerfile
+      context: ./cassandra
+      dockerfile: Dockerfile
+    ports:
+      - "9042:9042"
+    environment:
+      CASSANDRA_CLUSTER_NAME: "FoodDeliveryCluster"
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -u cassandra -p cassandra -e 'DESCRIBE KEYSPACES'"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
     depends_on:
-      - kafka
+      - kafka-broker-1
   
   spark-8:
     build:
-    context: ./processing_setups
-    dockerfile: Dockerfile
+      context: ./processing
+      dockerfile: Dockerfile
+    volumes:
+      - ./data_ingestion:/app
 
+  cassandra-consumer:
+    build: ./data_ingestion
+    command: python ./src/kafka_to_cassandra_consumer.py
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka-broker-1:9092
+      CASSANDRA_HOSTS: cassandra
+      CASSANDRA_KEYSPACE: food_delivery
+    depends_on:
+      cassandra:
+        condition: service_healthy  # Wait for Cassandra to be ready
+      kafka-broker-1:
+        condition: service_started
 
-  zookeeper:
-    image: wurstmeister/zookeeper:latest
-    ports:
-      - "2181:2181"
-
-
-    healthcheck:
-      test: ["CMD-SHELL", "echo 'ruok' | nc localhost 2181"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s 
+  s3-consumer:
+    build: ./data_ingestion
+    command: python ./src/order_consumer.py
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka-broker-1:9092
+      S3_BUCKET: numa-delivery
+      AWS_REGION: us-east-2
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+    env_file:
+      - .env 
+    depends_on:
+      - kafka-broker-1
   
   
   kafdrop:     # UI for Kafka
     image: obsidiandynamics/kafdrop:latest
     environment:
-      KAFKA_BROKERCONNECT: kafka-broker-1:9092,kafka-broker-2:9093
+      KAFKA_BROKERCONNECT: kafka-broker-1:9092
       SERVER_PORT: 9001
       JVM_OPTS: -Xms32M -Xmx64M
     ports:
       - "9001:9001"
     depends_on:
       - kafka-broker-1
-      - kafka-broker-2
+
   
-   # zookeeper:
-  #   image: bitnami/zookeeper:latest
-  #   environment:
-  #     - ALLOW_ANONYMOUS_LOGIN=yes
-  #   ports:
-  #     - "2181:2181"
-  #   volumes:
-  #     - zkData1:/data
-  #     - zkCatalog1:/catalog
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 2G
-  #       reservations:
-  #         memory: 1G
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
   
-  # kafka-broker-1:
-  #   image: confluentinc/cp-kafka:latest
-  #   environment:
-  #     KAFKA_BROKER_ID: 1
-  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-1:9092,INTERNAL://kafka-broker-1:29092
-  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
-  #     KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:29092
-  #     KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
-  #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
-  #   depends_on:
-  #     - zookeeper
-  #   ports:
-  #     - "9092:9092"
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 30s
+  kafka-broker-1:
+    image: confluentinc/cp-kafka:latest
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-1:9092,INTERNAL://kafka-broker-1:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    command: >
+      bash -c "
+      kafka-topics.sh --create --topic food-delivery.orders.raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 &&
+      kafka-topics.sh --create --topic food-delivery.couriers.raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 &&
+      kafka-topics.sh --create --topic food-delivery.merchants.raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 &&
+      kafka-topics.sh --create --topic food-delivery.reviews.raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 &&
+      tail -f /dev/null
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka-broker-1:9092 --list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   # kafka-broker-2:
   #   image: confluentinc/cp-kafka:latest

@@ -1,5 +1,6 @@
+#!/bin/bash
 
-# List of topics to create
+# Define the Kafka topics to create
 TOPICS=(
     "food-delivery.orders.raw"
     "food-delivery.couriers.raw"
@@ -7,12 +8,13 @@ TOPICS=(
     "food-delivery.reviews.raw"
 )
 
-# Create topics
-for TOPIC in "${TOPICS[@]}"; do
-    $KAFKA_HOME/bin/kafka-topics.sh --create \
-        --bootstrap-server $BOOTSTRAP_SERVERS \
-        --replication-factor 1 \
-        --partitions 3 \
-        --topic $TOPIC
-    echo "Created topic: $TOPIC"
+# Run the Kafka topic creation commands inside the Kafka Docker container
+for TOPIC in "${TOPICS[@]}"
+do
+    docker exec -it kafka \
+        kafka-topics.sh --create \
+        --topic $TOPIC \
+        --bootstrap-server localhost:9092 \
+        --partitions 1 \
+        --replication-factor 1
 done

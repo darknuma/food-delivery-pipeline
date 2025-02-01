@@ -64,10 +64,10 @@ class DeliveryEventProducer:
                 )
 
                 order = self.generator.generate_order_event()
-                self.send_event(self.topics["order"], order["order_id", order])
+                self.send_event(self.topics["orders"], order["order_id", order])
 
                 courier = self.generator.generate_courier_event()
-                self.send_event(self.topics["courier"], courier["courier_id"], courier)
+                self.send_event(self.topics["couriers"], courier["courier_id"], courier)
 
                 review = self.generator.generate_review_event()
                 self.send_event(self.topics["review"], courier["review_id"], review)

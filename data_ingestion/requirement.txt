@@ -6,4 +6,4 @@ black
 pyarrow
 boto3
 cassandra-driver 
-
+python-dotenv

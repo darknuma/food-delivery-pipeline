@@ -36,7 +36,7 @@ def bronze_to_silver():
 
     # Read raw data from bronze layer (e.g., S3 or Cassandra)
     raw_df = spark.read \
-        .format("json") \
+        .format("parquet") \
         .schema(order_schema) \
         .load("s3a://your-bucket/bronze/orders/")
 
