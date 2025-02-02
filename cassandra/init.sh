@@ -6,7 +6,7 @@ until cqlsh -e "describe keyspaces"; do
 done
 
 echo "Initializing Cassandra database..."
-/usr/bin/cqlsh -f /docker-entrypoint-initdb.d/scripts/cassandra_setup.cql
+cqlsh -f /docker-entrypoint-initdb.d/scripts/cassandra_setup.cql
 
 
 

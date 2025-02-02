@@ -8,7 +8,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka-broker-1:9092
     depends_on:
       kafka-broker-1:
-        condition: service_healthy  # Wait for Kafka healthcheck to pass
+        condition: service_healthy  
       cassandra:
         condition: service_healthy
     volumes:
@@ -33,7 +33,17 @@ services:
       - kafka-broker-1
     volumes:
       - cassandra_data:/var/lib/cassandra
+    
+  cassandra-web:
+    image: renaudhager/cassandra-ui:latest
+    ports:
+      - "3000:3000"
+    command: ["--hosts", "cassandra", "--port", "9042", "-u", "cassandra", "-p", "cassandra"]
+    depends_on:
+      cassandra:
+        condition: service_healthy
 
+    
   spark-8:
     build:
       context: ./processing

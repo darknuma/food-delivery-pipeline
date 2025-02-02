@@ -5,10 +5,28 @@ from datetime import datetime, timedelta
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+ 
 
-from pyspark.sql import SparkSession
+# Initialize Spark session with AWS credentials  
+spark = SparkSession.builder \
+    .appName("Read Parquet from S3") \
+    .config("spark.hadoop.fs.s3a.access.key", "<YOUR_ACCESS_KEY>") \
+    .config("spark.hadoop.fs.s3a.secret.key", "<YOUR_SECRET_KEY>") \
+    .getOrCreate()  
+
+# Read Parquet file from S3  
+df = spark.read.parquet("s3a://numa-delivery/bronze/orders/parquet-file")  
+
+# Show the DataFrame  
+df.show()  
+
+
 from pyspark.sql.functions import col, from_json, to_timestamp
 from pyspark.sql.types import StructType, StructField, StringType, DecimalType, TimestampType
+
+
+
+
 
 # Define schema for raw data
 order_schema = StructType([
@@ -38,7 +56,7 @@ def bronze_to_silver():
     raw_df = spark.read \
         .format("parquet") \
         .schema(order_schema) \
-        .load("s3a://your-bucket/bronze/orders/")
+        .load("s3a://numa-delivery/bronze/orders/")
 
     # Clean and transform data
     silver_df = raw_df \

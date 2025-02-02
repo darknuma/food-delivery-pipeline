@@ -31,7 +31,7 @@ class DeliveryEventGenerator:
         self.order_reviews = {}
         self._load_merchants()  
         self.menu_items = self._load_menu_items()
-        self.customer_addresses = df["Address"].to_list()
+        self.customer_addresses = merchant_data["Address"].to_list()
 
     def _load_merchants(self) -> Dict[str, dict]:
         """Load merchant data with locations"""
@@ -72,13 +72,16 @@ class DeliveryEventGenerator:
         for _ in range(random.randint(1, 4)):
             menu_item = random.choice(self.menu_items[merchant_id])
             quantity = random.randint(1, 3)
+            unit_price = float(menu_item["price"])  # Convert Decimal to float
+            total_price = float(menu_item["price"] * quantity)  # Convert Decimal to float
+
             items.append(
                 OrderItem(
                     item_id=menu_item["item_id"],
                     name=menu_item["name"],
                     quantity=quantity,
-                    unit_price=menu_item["price"],
-                    total_price=menu_item["price"] * quantity
+                    unit_price=unit_price,
+                    total_price=total_price
                 )
             )
 
@@ -183,7 +186,6 @@ class DeliveryEventGenerator:
         if not self.active_orders:
             return None  # Or handle the no-orders case differently
             
-        # Select a random active order
         order_id = random.choice(list(self.active_orders.keys()))
         order = self.active_orders[order_id]  
        

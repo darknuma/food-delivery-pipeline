@@ -6,27 +6,27 @@ USE food_delivery;
 CREATE TABLE IF NOT EXISTS courier (
     event_id text,
     event_timestamp timestamp,
-    merchant_id text,  -- fixed typo in 'merchant_id'
+    merchant_id text,  
     courier_id text,
     order_id text,
     delivery_status text,
-    delivery_location text,  -- changed from current_location to match Python code
+    current_location text,
     vehicle_type text,
     is_online boolean,
-    PRIMARY KEY ((courier_id), event_timestamp)  -- added PRIMARY KEY
+    PRIMARY KEY ((courier_id), event_timestamp)  
 ) WITH CLUSTERING ORDER BY (event_timestamp DESC);
 
-CREATE TABLE IF NOT EXISTS orders (  -- changed from 'order' as it's a reserved word
+CREATE TABLE IF NOT EXISTS orders ( 
     event_id text,
     event_timestamp timestamp,
     order_id text,
     merchant_id text,
-    courier_id text,  -- added as it's in Python code
+    courier_id text,  
     customer_id text,
     service_type text,
     order_status text,
-    items text,  -- specified as text since it's JSON in Python
-    delivery_location text,  -- specified as text since it's JSON in Python
+    items text, 
+    delivery_location text, 
     delivery_fee double,
     total_amount double,
     estimated_delivery_time timestamp,
