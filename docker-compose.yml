@@ -34,22 +34,32 @@ services:
     volumes:
       - cassandra_data:/var/lib/cassandra
     
-  cassandra-web:
-    image: renaudhager/cassandra-ui:latest
-    ports:
-      - "3000:3000"
-    command: ["--hosts", "cassandra", "--port", "9042", "-u", "cassandra", "-p", "cassandra"]
-    depends_on:
-      cassandra:
-        condition: service_healthy
+  # cassandra-web:
+  #   image: renaudhager/cassandra-ui:latest
+  #   ports:
+  #     - "3000:3000"
+  #   command: ["--hosts", "cassandra", "--port", "9042", "-u", "cassandra", "-p", "cassandra"]
+  #   depends_on:
+  #     cassandra:
+  #       condition: service_healthy
 
     
   spark-8:
     build:
       context: ./processing
       dockerfile: Dockerfile
+    environment:
+      S3_BUCKET: numa-delivery
+      AWS_REGION: us-east-2
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      SNOWFLAKE_USER: ${SNOWFLAKE_USER}
+      SNOWFLAKE_PASSWORD: ${SNOWFLAKE_PASSWORD} 
+    env_file:
+      - .env 
     volumes:
       - ./data_ingestion:/app
+
 
   cassandra-consumer:
     build: ./data_ingestion
