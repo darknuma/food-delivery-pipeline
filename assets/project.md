@@ -98,7 +98,7 @@ use delta lake architecture - bronze - silver - gold, or Lambda Architecture
 - Consume to S3 [x]
 - Write bronze to silver layer on s3 [x]
 - Write s3 layer to Snowflake [x]
-- write to gold (metrics) [ ]
+- write to gold (metrics) [ x ]
 - write tests [ ]
 - create ci/cd [ ]
 - write validation tests [ ]
@@ -106,4 +106,6 @@ use delta lake architecture - bronze - silver - gold, or Lambda Architecture
 - write some k8s, use either kind or minikube [ ]
 - write IAC with terraform [ ]
 - visualize on Power BI [ ]
+
+
 
