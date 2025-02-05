@@ -10,15 +10,16 @@ use delta lake architecture - bronze - silver - gold, or Lambda Architecture
 
 ## Data Ingestion:
  - Realtime messaging.
- - Message format using JSON
+ - Message format using PARQUET
 ## Data processing
  - **Event Handling**: Implement logic to manage events, such as order status changes and delivery updates.
 
 ## Data storage 
-   - Operational database: cassandra
-   - data lake and data warehouse: snowflake, if i use s3 (as my data lake layer) then i have to use redshift
-   - use dbt (SQL)
-   - Partition data based on use cases (e.g., by region, restaurant, or delivery zone).Use efficient storage formats (e.g., Parquet, ORC) for batch and historical data.
+   - Operational database: (cassandra)
+   - data lake (S3) and data warehouse: (snowflake)
+   - ~~use dbt (SQL)~~
+   - Partition data based on use cases (e.g., event time).
+   - Use efficient storage formats (e.g., Parquet, ORC) for batch and historical data.
    
 **Should there be data cleaning and transformationm yes that is why we have the delta architecture.*
 # Key Metrics
@@ -28,8 +29,8 @@ use delta lake architecture - bronze - silver - gold, or Lambda Architecture
  - ETA calculation for best routes
  
 
-# How I setup data sources:
-- order placement
+# How I thin about data sources:
+- order placement 
 - delivery progress
 - driver assignment
 - restaurant acceptance/rejection
@@ -37,21 +38,20 @@ use delta lake architecture - bronze - silver - gold, or Lambda Architecture
 # Project Phase
 - Data Acquisition Layer
   - Mobile app event streams
-  - Restaurant POS systems
-  - GPS tracking data
-  - Payment transaction logs
-  - Customer interaction touchpoints
+  - GPS tracking data (estimated time of delivery)
+  - Payment transaction logs (Payment Status, Payment Pending)
+  - Review (Systems)
 
 - Data Ingestion and Processing
-  - design data ingestion pipeline
-  - implement
-  - develop data transformation and vlaidation
+  - Design data ingestion pipeline
+  - Implemnt 
+  - develop data transformation and validation
   - implement data quality  monitoring
 
 - Data Storage and Analytics
-  -  data lake to store proecess and operational data base setip
+  -  data lake to store proecess and operational data base setup
   - implement data visualization
-  -  develop ML models
+  - develop ML models
 
 - Observability
  - distributed tracing
@@ -73,7 +73,7 @@ use delta lake architecture - bronze - silver - gold, or Lambda Architecture
 - **Integration Testing**: Ensure that all components work together seamlessly.
 - **Load Testing**: Simulate high traffic to test the system’s performance under load.
 
-# Deplpument and Maintenance 
+# Deployment and Maintenance 
 
 - **Deploy the Application**: Use a CI/CD pipeline for smooth deployment to production.
 - **Continuous Improvement**: Regularly review system performance and gather user feedback to iterate and improve the application.
@@ -89,3 +89,21 @@ use delta lake architecture - bronze - silver - gold, or Lambda Architecture
 - **Delivery Route Optimization**: Use real-time traffic data to calculate the fastest routes.
 - **Customer Notifications**: Send push notifications for order status changes.
 - **Fraud Detection**: Identify anomalies in orders or driver behavior using real-time pattern analysis.
+
+
+# To dos
+- Generated python code for event_generator [X]
+- Kafka streams produces[X]
+- Consume to cassanda for operations  [X]
+- Consume to S3 [x]
+- Write bronze to silver layer on s3 [x]
+- Write s3 layer to Snowflake [x]
+- write to gold (metrics) [ ]
+- write tests [ ]
+- create ci/cd [ ]
+- write validation tests [ ]
+- write orhcestrator. (just discovered how much Snowpark is so useful) and might actually use prefect. [ ]
+- write some k8s, use either kind or minikube [ ]
+- write IAC with terraform [ ]
+- visualize on Power BI [ ]
+
