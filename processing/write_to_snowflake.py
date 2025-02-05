@@ -112,6 +112,10 @@
 #         logger.error(f"Error writing to Snowflake: {e}")
 #     finally:
 #         spark.stop()
+# spark-submit   --master local[*] 
+#   --packages org.apache.hadoop:hadoop-aws:3.3.6,net.snowflake:spark-snowflake_2.12:2.12.0-spark_3.3,net.snowflake:snowflake-jdbc:3.13.14 
+#   --conf spark.hadoop.fs.s3a.access.key=$AWS_ACCESS_KEY   --conf spark.hadoop.fs.s3a.secret.key=$AWS_SECRET_KEY   
+# --conf spark.hadoop.fs.s3a.endpoint=s3.us-east-2.amazonaws.com   --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem  write_to_snowflake.py
 
 # if __name__ == "__main__":
 #     main()
@@ -125,21 +129,17 @@ from dotenv import load_dotenv
 
 os.environ["SNOWFLAKE_OCSP_FAIL_OPEN"] = "true"
 
-# Load environment variables
 load_dotenv()
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize Spark Session
 spark = SparkSession.builder \
     .appName("WriteToSnowflake") \
     .config("spark.jars.packages", 
             "net.snowflake:snowflake-jdbc:3.13.14,net.snowflake:spark-snowflake_2.12:2.12.0-spark_3.3") \
     .getOrCreate()
 
-# Snowflake connection options
 SF_OPTIONS = {
     "sfURL": "https://fg00255.switzerland-north.azure.snowflakecomputing.com",
     "sfDatabase": "DELIVERY",
@@ -158,7 +158,6 @@ def execute_snowflake_query(queries, return_results=False):
             account="fg00255.switzerland-north.azure"
         )
         cursor = conn.cursor()
-                # Set database and schema explicitly (if not already set)
         cursor.execute(f"USE DATABASE {SF_OPTIONS['sfDatabase']};")
         cursor.execute(f"USE SCHEMA {SF_OPTIONS['sfSchema']};")
         
@@ -187,7 +186,6 @@ def write_to_snowflake(df, table_name):
 
     temp_table = f"{table_name}_STAGING"
 
-    # Get target table columns
     desc_query = f"DESC TABLE {table_name}"
     target_columns = execute_snowflake_query(desc_query, return_results=True)[0]
     target_column_names = [col[0].lower() for col in target_columns]
