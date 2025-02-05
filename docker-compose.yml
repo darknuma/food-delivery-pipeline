@@ -59,6 +59,7 @@ services:
       - .env 
     volumes:
       - ./data_ingestion:/app
+      - ./processing:/app 
 
 
   cassandra-consumer:

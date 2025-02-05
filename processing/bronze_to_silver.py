@@ -118,7 +118,7 @@ def main():
         .getOrCreate()
 
     bucket = "numa-delivery"
-    topic = "orders"
+    topic = "food-delivery-orders-raw" 
     s3_bronze_path = f"s3a://{bucket}/bronze/{topic}/*/*.parquet"
 
     df_bronze = load_silver_data(spark, s3_bronze_path)
