@@ -55,6 +55,9 @@ services:
       AWS_SECRET_KEY: ${AWS_SECRET_KEY}
       SNOWFLAKE_USER: ${SNOWFLAKE_USER}
       SNOWFLAKE_PASSWORD: ${SNOWFLAKE_PASSWORD} 
+    ports:
+      - "8888:8888"
+      - "7077:7077"
     env_file:
       - .env 
     volumes:

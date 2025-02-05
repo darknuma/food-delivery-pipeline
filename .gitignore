@@ -1,2 +1,5 @@
 __pycache__
 .env 
+.ipynb_checkpoints
+.metals
+.vscode

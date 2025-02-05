@@ -9,3 +9,4 @@ cassandra-driver
 python-dotenv
 pyspark
 jupyter
+snowflake-connector-python
