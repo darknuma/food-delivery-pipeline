@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 ENV SPARK_HOME=/opt/bitnami/spark
 ENV PATH=$SPARK_HOME/bin:$PATH
 
-RUN pip install pyarrow boto3 python-dotenv jupyter
+RUN pip install pyarrow boto3 python-dotenv jupyter pytest pytest-asyncio pytest-mock moto 
 
 ENV SPARK_JARS_PACKAGES="org.apache.hadoop:hadoop-aws:3.3.1,net.snowflake:spark-snowflake_2.12:2.11.0-spark_3.3"
 

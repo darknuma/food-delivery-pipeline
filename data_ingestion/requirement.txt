@@ -10,3 +10,4 @@ python-dotenv
 snowflake-connector-python
 pytest 
 pytest-mock
+pytest-asyncio

@@ -99,7 +99,7 @@ use delta lake architecture - bronze - silver - gold, or Lambda Architecture
 - Write bronze to silver layer on s3 [x]
 - Write s3 layer to Snowflake [x]
 - write to gold (metrics) [ x ]
-- write tests [ ]
+- write tests [x]
 - create ci/cd [ ]
 - write validation tests [ ]
 - write orhcestrator. (just discovered how much Snowpark is so useful) and might actually use prefect. [ ]

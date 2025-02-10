@@ -172,7 +172,7 @@ class DeliveryEventGenerator:
             event_timestamp=datetime.now(),
             merchant_id=merchant_id, 
             courier_id=courier_id,
-            order_id=order_id,
+            order_id=order_id,  # Always provide a valid string
             delivery_status=random.choice(list(DeliveryStatus)),
             current_location=location,
             battery_level=random.uniform(0.3, 1.0),
@@ -196,7 +196,7 @@ class DeliveryEventGenerator:
             review_id=str(uuid.uuid4()),
             event_id=event_id, 
             order_id=order_id,
-            customer_id=order.customer_id,
+            customer_id=order['customer_id'],
             courier_rating=random.randint(1,5),
             merchant_rating=random.randint(1,5),
             delivery_rating=random.randint(1,5),
