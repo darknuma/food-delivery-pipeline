@@ -7,6 +7,6 @@ pyarrow
 boto3
 cassandra-driver 
 python-dotenv
-pyspark
-jupyter
 snowflake-connector-python
+pytest 
+pytest-mock

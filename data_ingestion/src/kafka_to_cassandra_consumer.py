@@ -26,12 +26,9 @@ class KafkaToCassandraConsumer:
 
     def start_consuming(self, topics: list):
         """Start consuming messages from Kafka and writing to Cassandra."""
-        # Subscribe to the topics
-        self.consumer.subscribe(topics)
-        
+        self.consumer.subscribe(topics)        
         try:
             while True:
-                # Poll for messages
                 records = self.consumer.poll(timeout_ms=1000)
                 
                 if not records:

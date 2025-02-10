@@ -103,7 +103,7 @@ class OrderEvent(BaseModel):
 class CourierEvent(BaseModel):
     event_id: str
     event_timestamp: datetime
-    mechant_id: str
+    merchant_id: str
     courier_id: str
     order_id: str
     delivery_status:DeliveryStatus

@@ -29,7 +29,9 @@ class DeliveryEventProducer:
             acks="all",
         )
 
-        FILE_PATH = "/app/data_utils/restaurants_cleaned.csv"
+        # FILE_PATH = "/app/data_utils/restaurants_cleaned.csv"
+        FILE_PATH = "./data_ingestion/data_utils/restaurants_cleaned.csv"
+
         merchant_data = pd.read_csv(FILE_PATH)
 
         self.generator = DeliveryEventGenerator(merchant_data)

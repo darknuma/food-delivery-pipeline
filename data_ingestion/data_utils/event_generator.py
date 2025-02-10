@@ -39,7 +39,7 @@ class DeliveryEventGenerator:
         for _, row in self.merchant_data.iterrows():
             merchant_id = str(uuid.uuid4())
             merchants[merchant_id] = {
-                "id": merchant_id,
+                "merchant_id": merchant_id,
                 "name": row["Name"],
                 "location": Location(
                     latitude=fake.latitude(),
@@ -119,44 +119,6 @@ class DeliveryEventGenerator:
         self.customer_ids[order_id] = customer_id 
         return order_id, order_event.model_dump()
 
-    def generate_courier_event(self, event_id:str) -> dict:
-        """Generate a courier event"""
-          # Ensure at least one active courier exists
-        if not self.active_couriers or (random.random() < 0.3 and len(self.active_couriers) < 50):
-            courier_id = str(uuid.uuid4())
-            self.active_couriers.add(courier_id)
-        else:
-            courier_id = random.choice(list(self.active_couriers))
-
-        courier_address = random.choice(self.merchant_data["Address"].to_list())
-
-        location = Location(
-            latitude=fake.latitude() + Decimal(random.uniform(-0.1, 0.1)),
-            longitude=fake.longitude() + Decimal(random.uniform(-0.1, 0.1)),
-            address=courier_address
-        )
-        
-        if self.active_orders:
-            random_order_id = random.choice(list(self.active_orders.keys()))
-            merchant_id = self.active_orders[random_order_id].merchant_id
-        else:
-            merchant_id = random.choice(list(self.merchants.keys()))
-
-        courier_event = CourierEvent(
-            event_id=event_id,
-            event_timestamp=datetime.now(),
-            mechant_id=merchant_id, 
-            courier_id=courier_id,
-            order_id=random.choice(list(self.active_orders.keys())) if self.active_orders else None,
-            delivery_status=random.choice(list(DeliveryStatus)),
-            current_location=location,
-            battery_level=random.uniform(0.3, 1.0),
-            is_online=True,
-            vehicle_type=random.choice(["Bicycle", "Motorcycle", "Van"]),
-            
-        )
-
-        return courier_event.model_dump()
 
     def generate_merchant_event(self, event_id:str) -> dict:
         """Generate a merchant status event"""
@@ -179,6 +141,46 @@ class DeliveryEventGenerator:
             
         )
         return merchant_event.model_dump()
+    
+    def generate_courier_event(self, event_id: str) -> dict:
+        """Generate a courier event"""
+        # Ensure at least one active courier exists
+        if not self.active_couriers or (random.random() < 0.3 and len(self.active_couriers) < 50):
+            courier_id = str(uuid.uuid4())
+            self.active_couriers.add(courier_id)
+        else:
+            courier_id = random.choice(list(self.active_couriers))
+
+        courier_address = random.choice(self.merchant_data["Address"].to_list())
+
+        location = Location(
+            latitude=fake.latitude() + Decimal(random.uniform(-0.1, 0.1)),
+            longitude=fake.longitude() + Decimal(random.uniform(-0.1, 0.1)),
+            address=courier_address
+        )
+        
+        # Generate a new order ID if there are no active orders
+        if self.active_orders:
+            order_id = random.choice(list(self.active_orders.keys()))
+            merchant_id = self.active_orders[order_id].merchant_id
+        else:
+            order_id = str(uuid.uuid4())
+            merchant_id = random.choice(list(self.merchants.keys()))
+
+        courier_event = CourierEvent(
+            event_id=event_id,
+            event_timestamp=datetime.now(),
+            merchant_id=merchant_id, 
+            courier_id=courier_id,
+            order_id=order_id,
+            delivery_status=random.choice(list(DeliveryStatus)),
+            current_location=location,
+            battery_level=random.uniform(0.3, 1.0),
+            is_online=True,
+            vehicle_type=random.choice(["Bicycle", "Motorcycle", "Van"]),
+        )
+
+        return courier_event.model_dump()
             
     def generate_review_event(self, event_id:str) -> dict:
         """Generate a customer feedback""" 

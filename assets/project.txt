@@ -38,7 +38,7 @@ Infrastructure as Code (Terraform)
 
 
 CI/CD Pipeline
-1.Test automation
+1.Test automation : In our template, we have defined formatting (isort, black), type checking (mypy), lint/Style checking (flake8), & python testing (pytest) as part of our ci .
 2. Build processes
 3. Deployment automation
 4. Environment management
