@@ -11,3 +11,7 @@ snowflake-connector-python
 pytest 
 pytest-mock
 pytest-asyncio
+ruff
+moto
+soda-core-snowflake
+soda-core-spark

@@ -1,24 +1,27 @@
 import unittest
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import patch, AsyncMock
 import pandas as pd
-import json
 import uuid
 import asyncio
-from kafka import KafkaProducer
 from data_ingestion.data_utils.event_generator import DeliveryEventGenerator
 from data_ingestion.src.delivery_producer import DeliveryEventProducer
 
+
 class TestDeliveryEventGenerator(unittest.TestCase):
     def setUp(self):
-        merchant_data = pd.DataFrame({
-            "Name": ["Pizza Place", "Burger Joint"],
-            "Address": ["123 Main St", "456 Elm St"]
-        })
+        merchant_data = pd.DataFrame(
+            {
+                "Name": ["Pizza Place", "Burger Joint"],
+                "Address": ["123 Main St", "456 Elm St"],
+            }
+        )
         self.generator = DeliveryEventGenerator(merchant_data)
         self.shared_event_id = str(uuid.uuid4())
 
     def test_generate_order_event(self):
-        order_id, order_event = self.generator.generate_order_event(self.shared_event_id)
+        order_id, order_event = self.generator.generate_order_event(
+            self.shared_event_id
+        )
         self.assertIsInstance(order_event, dict)
         self.assertEqual(order_event["event_id"], self.shared_event_id)
 
@@ -50,15 +53,23 @@ class TestDeliveryEventProducer(unittest.TestCase):
         self.assertEqual(key, "1234")
 
     @patch("data_ingestion.src.delivery_producer.DeliveryEventGenerator")
-    @patch("data_ingestion.src.delivery_producer.DeliveryEventProducer.send_event", new_callable=AsyncMock)
+    @patch(
+        "data_ingestion.src.delivery_producer.DeliveryEventProducer.send_event",
+        new_callable=AsyncMock,
+    )
     def test_producing(self, mock_send_event, MockEventGenerator):
         mock_generator = MockEventGenerator.return_value
-        mock_generator.generate_order_event.return_value = ("order123", {"event_id": "event123"})
+        mock_generator.generate_order_event.return_value = (
+            "order123",
+            {"event_id": "event123"},
+        )
         self.producer.generator = mock_generator
 
         # Run the async method inside an event loop
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.producer.send_event("orders", "order123", {"event_id": "event123"}))
+        loop.run_until_complete(
+            self.producer.send_event("orders", "order123", {"event_id": "event123"})
+        )
 
         mock_send_event.assert_called_once()
 
