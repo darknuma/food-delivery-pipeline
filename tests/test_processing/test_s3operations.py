@@ -2,6 +2,14 @@ import pytest
 from pyspark.sql import Row
 from pyspark.sql.types import StructType, StructField, StringType, ArrayType, DoubleType
 import pyspark.sql.functions as F
+from unittest.mock import patch
+from datetime import datetime 
+from processing.write_to_silver import (
+    transform_to_silver, explode_order_items,
+    write_order_items, read_bronze_data,
+    write_silver_data, get_orders_schema
+)
+
 
 # Mock data for testing
 @pytest.fixture
@@ -79,9 +87,6 @@ def test_explode_order_items(mock_data):
     assert first_row["quantity"] == 1
     assert first_row["unit_price"] == 5.99
     assert first_row["total_price"] == 5.99
-
-
-from unittest.mock import patch
 
 def test_read_bronze_data(spark):
     mock_path = "s3a://numa-delivery/bronze/food-delivery-orders-raw/2025/02/10/*"

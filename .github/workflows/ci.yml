@@ -1,2 +1,57 @@
-name: Food DeliveryTest
+# name: CI Pipeline
 
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
+
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+
+#     services:
+#       kafka:
+#         image: confluentinc/cp-kafka:latest
+#         ports:
+#           - 9092:9092
+#         env:
+#           KAFKA_BROKER_ID: 1
+#           KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#           KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+#           KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+#           KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+#           KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          
+#       cassandra:
+#         image: cassandra:latest
+#         ports:
+#           - 9042:9042
+#         env:
+#           CASSANDRA_CLUSTER_NAME: "FoodDeliveryCluster"
+
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v4
+
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: "3.10"
+
+#       - name: Install Dependencies
+#         run: |
+#           pip install --upgrade pip
+#           pip install -r requirement.txt
+
+
+#       - name: Run Ruff (Lint and Format Check)
+#         run: ruff check .
+
+#       - name: Run Pytest
+#         run: pytest tests/
+
+#       - name: Run Unittest
+#         run: python -m unittest discover -s tests/
