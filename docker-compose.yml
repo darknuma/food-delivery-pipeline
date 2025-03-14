@@ -1,5 +1,6 @@
 services:
 
+
   producer:
     build:
       context: ./data_ingestion
@@ -158,6 +159,44 @@ services:
       /usr/bin/kafka-topics --create --topic food-delivery-merchants-raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 &&
       /usr/bin/kafka-topics --create --topic food-delivery-reviews-raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 
       '
+
+  prefect-agent:
+    build:
+      context: ./processing
+      dockerfile: Dockerfile
+    command: prefect agent start -q 'food-delivery'
+    environment:
+      PREFECT_API_URL: http://prefect-api:4200/api
+      KAFKA_BOOTSTRAP_SERVERS: kafka-broker-1:9092
+      CASSANDRA_HOSTS: cassandra
+      CASSANDRA_KEYSPACE: food_delivery
+      S3_BUCKET: numa-delivery
+      AWS_REGION: us-east-2
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      SNOWFLAKE_USER: ${SNOWFLAKE_USER}
+      SNOWFLAKE_PASSWORD: ${SNOWFLAKE_PASSWORD}
+    depends_on:
+      - prefect-api
+      - kafka-broker-1
+      - cassandra
+    volumes:
+      - ./processing:/app
+      - ./data_ingestion:/data_ingestion
+
+  # Add Prefect API service
+  prefect-api:
+    image: prefecthq/prefect:2.13.0
+    command: prefect server start
+    ports:
+      - "4200:4200"
+    volumes:
+      - prefect_data:/root/.prefect
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4200/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
   cassandra_data:
 

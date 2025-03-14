@@ -5,4 +5,5 @@ __pycache__
 .vscode
 .pytest_cache 
 ignore.py 
-.ruff_cache
+.ruff_cache 
+

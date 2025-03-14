@@ -146,20 +146,19 @@ def write_metrics_to_gold(metrics_df, table_name):
 
 
 def main():
-    # Read from silver
-    orders_df = (
-        spark.read.format("snowflake")
-        .options(**SF_OPTIONS)
-        .option("dbtable", "ORDERS")
+    orders_df = spark.read \
+        .format("snowflake") \
+        .options(**SF_OPTIONS) \
+        .option("dbtable", "ORDERS") \
         .load()
-    )
+    
 
     order_items_df = (
         spark.read.format("snowflake")
         .options(**SF_OPTIONS)
         .option("dbtable", "ORDER_ITEMS")
         .load()
-    )
+   
 
     # Calculate metrics
     try:
