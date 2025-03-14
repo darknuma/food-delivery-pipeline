@@ -160,7 +160,6 @@ services:
       /usr/bin/kafka-topics --create --topic food-delivery-reviews-raw --bootstrap-server kafka-broker-1:9092 --partitions 1 --replication-factor 1 
       '
 
-       # Add Prefect agent service
   prefect-agent:
     build:
       context: ./processing

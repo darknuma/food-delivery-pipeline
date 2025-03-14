@@ -96,7 +96,6 @@ def write_metrics_to_gold(metrics_df, table_name):
         raise e
 
 def main():
-    # Read from silver
     orders_df = spark.read \
         .format("snowflake") \
         .options(**SF_OPTIONS) \

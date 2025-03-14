@@ -1,4 +1,3 @@
-# deploy_flow.py (place in processing directory)
 from prefect.deployments import Deployment
 from prefect.server.schemas.schedules import CronSchedule
 from prefect_pipeline import food_delivery_pipeline
