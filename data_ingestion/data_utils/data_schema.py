@@ -1,10 +1,8 @@
-
 from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
-import random 
-from datetime import datetime 
+from datetime import datetime
 from typing import List, Optional
-from decimal import Decimal 
+from decimal import Decimal
 
 
 # schemas
@@ -13,6 +11,7 @@ class ServiceType(str, Enum):
     PACKAGE_DELIVERY = "packae_delivery"
     PHARMACY = "pharmacy"
     GROCERIES = "groceries"
+
 
 class OrderStatus(str, Enum):
     CREATED = "created"
@@ -26,6 +25,7 @@ class OrderStatus(str, Enum):
     DELIVERED = "delivered"
     CANCELLED = "cancelled"
 
+
 class DeliveryStatus(str, Enum):
     ASSIGNED = "assigned"
     ACCEPTED = "accepted"
@@ -36,12 +36,13 @@ class DeliveryStatus(str, Enum):
     DELIVERED = "delivered"
     CANCELLED = "cancelled"
 
+
 class MerchantEvent(BaseModel):
     event_id: str
     event_timestamp: datetime
     merchant_id: str
     order_id: Optional[str]
-    average_preparation_time: Optional[int] # in minutees
+    average_preparation_time: Optional[int]  # in minutees
     is_open: bool
     current_load: int
 
@@ -56,25 +57,29 @@ class OrderReview(BaseModel):
     feedback_timestamp: datetime
     comments: Optional[str]
 
+
 class Location(BaseModel):
     latitude: float
     longitude: float
     address: str
 
+
 class OrderItem(BaseModel):
     item_id: str
     name: str
     quantity: int
-    unit_price: Decimal 
+    unit_price: Decimal
     total_price: Decimal
     # customizations: Optional[Dict[str, str]]
     # model_config = ConfigDict(arbitrary_types_allowed=True)
+
 
 class PaymentMethod(str, Enum):
     CARD = "card"
     CASH = "cash"
     WALLET = "wallet"
     BANK_TRANSFER = "bank_transfer"
+
 
 class PaymentStatus(str, Enum):
     PENDING = "pending"
@@ -100,17 +105,15 @@ class OrderEvent(BaseModel):
     payment_status: PaymentStatus
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
+
 class CourierEvent(BaseModel):
     event_id: str
     event_timestamp: datetime
     merchant_id: str
     courier_id: str
     order_id: str
-    delivery_status:DeliveryStatus
+    delivery_status: DeliveryStatus
     current_location: Location
     battery_level: Optional[float]
     vehicle_type: str
     is_online: bool
-
-    
-

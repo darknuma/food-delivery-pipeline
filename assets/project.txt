@@ -15,12 +15,14 @@ Write Validation Tests
 4. End-to-end data flow validation
 
 Create Orchestrator with Prefect
+_____________________________________________
 1. Workflow orchestration for your ETL pipeline
 2. Task dependencies and scheduling
 3. Error handling and retries
 4. Monitoring and logging
+______________________________________________
 
-
+3.211.157.115
 Kubernetes Setup
 1.Set up local development with minikube/kind
 Create deployments for:

@@ -9,7 +9,6 @@ import sys
 import os
 import asyncio
 import pandas as pd
-import concurrent.futures
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -29,8 +28,8 @@ class DeliveryEventProducer:
             acks="all",
         )
 
-        # FILE_PATH = "/app/data_utils/restaurants_cleaned.csv"
-        FILE_PATH = "./data_ingestion/data_utils/restaurants_cleaned.csv"
+        FILE_PATH = "/app/data_utils/restaurants_cleaned.csv"
+        # FILE_PATH = "./data_ingestion/data_utils/restaurants_cleaned.csv"
 
         merchant_data = pd.read_csv(FILE_PATH)
 
@@ -57,7 +56,9 @@ class DeliveryEventProducer:
         """Function to produce events asynchronously"""
         topic = self.topics[topic_key]
         partition_key = self._get_partition_key(topic, event)
-        logger.info(f"Sending event to topic {topic} with key {partition_key} and event {event}")
+        logger.info(
+            f"Sending event to topic {topic} with key {partition_key} and event {event}"
+        )
 
         # Use a thread pool to handle the synchronous Kafka producer
         loop = asyncio.get_event_loop()
@@ -69,7 +70,7 @@ class DeliveryEventProducer:
                     key=partition_key,
                     value=event,
                     timestamp_ms=int(datetime.now().timestamp() * 1000),
-                ).get(timeout=10)
+                ).get(timeout=10),
             )
             await future
             logger.info(f"Event sent to {topic} with key {partition_key}")
@@ -82,9 +83,10 @@ class DeliveryEventProducer:
             while True:
                 shared_event_id = str(uuid.uuid4())
                 merchant = self.generator.generate_merchant_event(shared_event_id)
-                await self.send_event("merchants", merchant["merchant_id"], merchant
+                await self.send_event("merchants", merchant["merchant_id"], merchant)
+                order_id, order_event = self.generator.generate_order_event(
+                    shared_event_id
                 )
-                order_id, order_event = self.generator.generate_order_event(shared_event_id)
                 await self.send_event("orders", order_id, order_event)
 
                 courier = self.generator.generate_courier_event(shared_event_id)
